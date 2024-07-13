@@ -1,0 +1,40 @@
+[debug] [2024-07-13T14:13:40.930Z] ----------------------------------------------------------------------
+[debug] [2024-07-13T14:13:40.934Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\boy22\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js deploy --only functions
+[debug] [2024-07-13T14:13:40.934Z] CLI Version:   13.13.2
+[debug] [2024-07-13T14:13:40.935Z] Platform:      win32
+[debug] [2024-07-13T14:13:40.935Z] Node Version:  v20.11.0
+[debug] [2024-07-13T14:13:40.935Z] Time:          Sat Jul 13 2024 22:13:40 GMT+0800 (台北標準時間)
+[debug] [2024-07-13T14:13:40.935Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2024-07-13T14:13:41.030Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2024-07-13T14:13:41.031Z] > authorizing via signed-in user (boy2285256@gmail.com)
+[debug] [2024-07-13T14:13:41.031Z] [iam] checking project learn-english-abf46 for permissions ["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]
+[debug] [2024-07-13T14:13:41.033Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/learn-english-abf46:testIamPermissions [none]
+[debug] [2024-07-13T14:13:41.033Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/learn-english-abf46:testIamPermissions x-goog-quota-user=projects/learn-english-abf46
+[debug] [2024-07-13T14:13:41.034Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/learn-english-abf46:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]}
+[debug] [2024-07-13T14:13:42.401Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/learn-english-abf46:testIamPermissions 200
+[debug] [2024-07-13T14:13:42.401Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/learn-english-abf46:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]}
+[debug] [2024-07-13T14:13:42.401Z] >>> [apiv2][query] POST https://iam.googleapis.com/v1/projects/learn-english-abf46/serviceAccounts/learn-english-abf46@appspot.gserviceaccount.com:testIamPermissions [none]
+[debug] [2024-07-13T14:13:42.402Z] >>> [apiv2][body] POST https://iam.googleapis.com/v1/projects/learn-english-abf46/serviceAccounts/learn-english-abf46@appspot.gserviceaccount.com:testIamPermissions {"permissions":["iam.serviceAccounts.actAs"]}
+[debug] [2024-07-13T14:13:42.713Z] <<< [apiv2][status] POST https://iam.googleapis.com/v1/projects/learn-english-abf46/serviceAccounts/learn-english-abf46@appspot.gserviceaccount.com:testIamPermissions 404
+[debug] [2024-07-13T14:13:42.713Z] <<< [apiv2][body] POST https://iam.googleapis.com/v1/projects/learn-english-abf46/serviceAccounts/learn-english-abf46@appspot.gserviceaccount.com:testIamPermissions {"error":{"code":404,"message":"Unknown service account","status":"NOT_FOUND"}}
+[debug] [2024-07-13T14:13:42.715Z] [functions] service account IAM check errored, deploy may fail: HTTP Error: 404, Unknown service account {"name":"FirebaseError","children":[],"context":{"body":{"error":{"code":404,"message":"Unknown service account","status":"NOT_FOUND"}},"response":{"statusCode":404}},"exit":1,"message":"HTTP Error: 404, Unknown service account","status":404}
+[info] 
+[info] === Deploying to 'learn-english-abf46'...
+[info] 
+[info] i  deploying functions 
+[debug] [2024-07-13T14:13:42.727Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/learn-english-abf46 [none]
+[debug] [2024-07-13T14:13:43.124Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/learn-english-abf46 200
+[debug] [2024-07-13T14:13:43.124Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/learn-english-abf46 {"projectId":"learn-english-abf46","projectNumber":"557850676620","displayName":"learn-english","name":"projects/learn-english-abf46","resources":{"hostingSite":"learn-english-abf46","realtimeDatabaseInstance":"learn-english-abf46-default-rtdb"},"state":"ACTIVE","etag":"1_7953f2aa-5a54-443b-be10-cfebbb81aba0"}
+[info] i  functions: preparing codebase default for deployment 
+[info] i  functions: ensuring required API cloudfunctions.googleapis.com is enabled... 
+[info] i  functions: ensuring required API cloudbuild.googleapis.com is enabled... 
+[info] i  artifactregistry: ensuring required API artifactregistry.googleapis.com is enabled... 
+[debug] [2024-07-13T14:13:43.134Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/learn-english-abf46/services/cloudfunctions.googleapis.com [none]
+[debug] [2024-07-13T14:13:43.135Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/learn-english-abf46/services/cloudfunctions.googleapis.com x-goog-quota-user=projects/learn-english-abf46
+[debug] [2024-07-13T14:13:43.139Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/learn-english-abf46/services/runtimeconfig.googleapis.com [none]
+[debug] [2024-07-13T14:13:43.140Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/learn-english-abf46/services/runtimeconfig.googleapis.com x-goog-quota-user=projects/learn-english-abf46
+[debug] [2024-07-13T14:13:43.143Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/learn-english-abf46/services/cloudbuild.googleapis.com [none]
+[debug] [2024-07-13T14:13:43.143Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/learn-english-abf46/services/cloudbuild.googleapis.com x-goog-quota-user=projects/learn-english-abf46
+[debug] [2024-07-13T14:13:43.145Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/learn-english-abf46/services/artifactregistry.googleapis.com [none]
+[debug] [2024-07-13T14:13:43.146Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/learn-english-abf46/services/artifactregistry.googleapis.com x-goog-quota-user=projects/learn-english-abf46
