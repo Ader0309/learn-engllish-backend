@@ -1,32 +1,11 @@
 import { onRequest } from "firebase-functions/v2/https";
 import express from "express";
 import cors from "cors";
-import { initializeApp, applicationDefault, cert } from "firebase-admin/app";
-import { getFirestore } from "firebase-admin/firestore";
-import {
-    collection,
-    setDoc,
-    doc,
-    getDoc,
-    getDocs,
-    updateDoc,
-    deleteDoc,
-    query,
-    where,
-} from "firebase/firestore";
+import { initializeApp, applicationDefault } from "firebase-admin/app";
+import { getFirestore, FieldValue } from "firebase-admin/firestore";
 import "dotenv/config";
-// const firebaseConfig = {
-//     apiKey: process.env.APIKEY,
-//     authDomain: process.env.AUTH_DOMAIN,
-//     projectId: process.env.PROJECT_ID,
-//     storageBucket: process.env.STORAGE_BUCKET,
-//     messagingSenderId: process.env.MESSAGING_SENDER_ID,
-//     appId: process.env.APP_ID,
-//     measurementId: process.env.MEASUREMENT_ID,
-// };
 
 // 初始化firebase
-// const firebaseApp = initializeApp(firebaseConfig);
 const firebaseApp = initializeApp({
     credential: applicationDefault(),
 });
@@ -38,7 +17,10 @@ const port = process.env.PORT || 8080;
 
 //設置cors
 //允許的來源
-const allowedOrigins = ["http://localhost:5173"];
+const allowedOrigins = [
+    "http://localhost:5173",
+    "https://learn-english-react.vercel.app",
+];
 const corsOptions = {
     origin: (origin, callback) => {
         if (allowedOrigins.includes(origin) || !origin) {
@@ -50,30 +32,27 @@ const corsOptions = {
 };
 
 app.use(express.static("public"));
-// 使用cors middleware
 app.use(cors(corsOptions));
 app.use(express.json());
 
 const apiRouter = express.Router();
 
-// 判斷中文及能輸入空格或頓號
+// 驗證函數（保持不變）
 function verifyChinese(text) {
     const regex = /^[\u4e00-\u9fa5\s、]+$/;
     return regex.test(text);
 }
-// 判斷僅能輸入英文
+
 function verifyEnglish(text) {
     const regex = /^[a-zA-Z]+$/;
     return regex.test(text);
 }
 
-// 驗證姓名欄位(中英文數字，不得含空格與特殊符號)
 function verifyName(text) {
     const regex = /^[\u4e00-\u9fa5a-zA-Z0-9]*$/;
     return regex.test(text);
 }
 
-// 驗證信箱
 function verifyEmail(text) {
     const regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     return regex.test(text);
@@ -83,12 +62,10 @@ function verifyEmail(text) {
 apiRouter.get("/english-list", async (req, res) => {
     try {
         const userAccount = req.headers["x-user-account"];
-        const collectionRef = db.collection(`users/${userAccount}/vocab`);
-        const snapshot = await getDocs(collectionRef);
+        const snapshot = await db
+            .collection(`users/${userAccount}/vocab`)
+            .get();
         const englishList = snapshot.docs.map((doc) => doc.data());
-        // const docEnglishes = collection(db, `users/${userAccount}/vocab`);
-        // const snapshot = await getDocs(docEnglishes);
-        // const englishList = snapshot.docs.map((doc) => doc.data());
         return res
             .status(200)
             .json({ status: "success", message: englishList });
@@ -102,10 +79,10 @@ apiRouter.get("/english-list", async (req, res) => {
 apiRouter.get("/important-english-list", async (req, res) => {
     try {
         const userAccount = req.headers["x-user-account"];
-        const docEnglishes = collection(db, `users/${userAccount}/vocab`);
-        const snapshot = await getDocs(
-            query(docEnglishes, where("important", "==", true))
-        );
+        const snapshot = await db
+            .collection(`users/${userAccount}/vocab`)
+            .where("important", "==", true)
+            .get();
         const englishList = snapshot.docs.map((doc) => doc.data());
         return res
             .status(200)
@@ -125,12 +102,13 @@ apiRouter.get("/english", async (req, res) => {
                 .status(400)
                 .json({ status: "error", message: "請輸入要搜尋之單字" });
         }
-        const docEnglish = doc(db, `users/${userAccount}/vocab/${english}`);
-        const docCheck = await getDoc(docEnglish);
-        if (docCheck.exists()) {
+        const docSnap = await db
+            .doc(`users/${userAccount}/vocab/${english}`)
+            .get();
+        if (docSnap.exists) {
             return res.status(200).json({
                 status: "success",
-                message: docCheck.data(),
+                message: docSnap.data(),
             });
         }
         return res.status(400).json({ status: "error", message: "查無此單字" });
@@ -150,15 +128,13 @@ apiRouter.get("/english-important", async (req, res) => {
                 .status(400)
                 .json({ status: "error", message: "請輸入要搜尋之單字" });
         }
-        const docEnglish = collection(db, `users/${userAccount}/vocab`);
-        const q = query(
-            docEnglish,
-            where("important", "==", true),
-            where("english", "==", english)
-        );
-        const docCheck = await getDocs(q);
-        if (!docCheck.empty) {
-            const docData = docCheck.docs[0].data();
+        const snapshot = await db
+            .collection(`users/${userAccount}/vocab`)
+            .where("important", "==", true)
+            .where("english", "==", english)
+            .get();
+        if (!snapshot.empty) {
+            const docData = snapshot.docs[0].data();
             return res.status(200).json({
                 status: "success",
                 message: docData,
@@ -169,6 +145,7 @@ apiRouter.get("/english-important", async (req, res) => {
         return res.status(500).json({ status: "error", message: "伺服器錯誤" });
     }
 });
+
 // 新增單字
 apiRouter.post("/english", async (req, res) => {
     try {
@@ -187,20 +164,17 @@ apiRouter.post("/english", async (req, res) => {
         if (!verifyChinese(chinese)) {
             return res.status(400).json({
                 status: "error",
-                message: `請輸入正確中文格式
-                (可已空白或頓號分隔)`,
+                message: "請輸入正確中文格式 (可已空白或頓號分隔)",
             });
         }
-        const docEnglish = doc(db, `users/${userAccount}/vocab/${english}`);
-        // 先檢查資料庫內是否有此單字
-        const docCheck = await getDoc(docEnglish);
-        if (docCheck.exists()) {
+        const docRef = db.doc(`users/${userAccount}/vocab/${english}`);
+        const docSnap = await docRef.get();
+        if (docSnap.exists) {
             return res
                 .status(400)
                 .json({ status: "error", message: "已有此單字" });
         }
-        // 沒有的話，新增單字
-        await setDoc(docEnglish, {
+        await docRef.set({
             english: english,
             chinese: chinese,
         });
@@ -210,12 +184,13 @@ apiRouter.post("/english", async (req, res) => {
         return res.status(500).json({ status: "error", message: "伺服器錯誤" });
     }
 });
+
 // 更新單字
 apiRouter.put("/english", async (req, res) => {
     try {
         const { english, chinese } = req.body;
-        const docEnglish = doc(db, `users/test/vocab/${english}`);
-        await updateDoc(docEnglish, {
+        const userAccount = req.headers["x-user-account"];
+        await db.doc(`users/${userAccount}/vocab/${english}`).update({
             chinese: chinese,
         });
         return res.status(200).json({ status: "success", message: "更新成功" });
@@ -223,13 +198,13 @@ apiRouter.put("/english", async (req, res) => {
         return res.status(500).json({ status: "error", message: "伺服器錯誤" });
     }
 });
+
 // 刪除單字
 apiRouter.delete("/english", async (req, res) => {
     try {
         const { english } = req.body;
         const userAccount = req.headers["x-user-account"];
-        const docEnglish = doc(db, `users/${userAccount}/vocab/${english}`);
-        await deleteDoc(docEnglish);
+        await db.doc(`users/${userAccount}/vocab/${english}`).delete();
         return res.status(200).json({ status: "success", message: "刪除成功" });
     } catch (err) {
         return res.status(500).json({ status: "error", message: "伺服器錯誤" });
@@ -241,17 +216,17 @@ apiRouter.put("/important", async (req, res) => {
     try {
         const { english } = req.body;
         const userAccount = req.headers["x-user-account"];
-        const docEnglish = doc(db, `users/${userAccount}/vocab/${english}`);
-        const docCheck = await getDoc(docEnglish);
-        if (docCheck.data().important) {
-            await updateDoc(docEnglish, {
+        const docRef = db.doc(`users/${userAccount}/vocab/${english}`);
+        const docSnap = await docRef.get();
+        if (docSnap.data().important) {
+            await docRef.update({
                 important: false,
             });
             return res
                 .status(200)
                 .json({ status: "success", message: "取消收藏成功" });
         }
-        await updateDoc(docEnglish, {
+        await docRef.update({
             important: true,
         });
         return res
@@ -281,14 +256,14 @@ apiRouter.post("/member/signup", async (req, res) => {
                 .status(400)
                 .json({ status: "error", message: "請輸入正確信箱格式" });
         }
-        const docMember = doc(db, `users/${email}`);
-        const docCheck = await getDoc(docMember);
-        if (docCheck.exists()) {
+        const docRef = db.doc(`users/${email}`);
+        const docSnap = await docRef.get();
+        if (docSnap.exists) {
             return res
                 .status(400)
                 .json({ status: "error", message: "帳號已存在" });
         }
-        await setDoc(docMember, {
+        await docRef.set({
             email: email,
             name: name,
         });
@@ -314,18 +289,15 @@ apiRouter.post("/member/login", async (req, res) => {
                 .status(400)
                 .json({ status: "error", message: "信箱或暱稱錯誤" });
         }
-        const docMember = doc(db, `users/${email}`);
-        //
-        const docCheck = await getDoc(docMember);
-        if (docCheck.exists()) {
-            if (
-                docCheck.data().name === name &&
-                docCheck.data().email === email
-            )
+        const docSnap = await db.doc(`users/${email}`).get();
+        if (docSnap.exists) {
+            const userData = docSnap.data();
+            if (userData.name === name && userData.email === email) {
                 return res.status(200).json({
                     status: "success",
                     message: "登入成功，頁面即將導向",
                 });
+            }
         }
         return res
             .status(400)
