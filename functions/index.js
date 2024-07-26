@@ -4,6 +4,7 @@ import cors from "cors";
 import { initializeApp, applicationDefault } from "firebase-admin/app";
 import { getFirestore, FieldValue } from "firebase-admin/firestore";
 import "dotenv/config";
+import rateLimit from "express-rate-limit";
 
 // 初始化firebase
 const firebaseApp = initializeApp({
@@ -30,6 +31,13 @@ const corsOptions = {
         }
     },
 };
+
+const limiter = rateLimit({
+    windowMs: 30 * 60 * 1000, // 30 分鐘
+    max: 300, // 限制每個 IP 在 windowMs 內最多 200 個請求
+});
+
+app.use(limiter);
 
 app.use(express.static("public"));
 app.use(cors(corsOptions));
